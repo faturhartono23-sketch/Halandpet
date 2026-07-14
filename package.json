@@ -9,7 +9,8 @@
     "lint": "next lint",
     "test": "vitest run",
     "test:e2e": "playwright test",
-    "seed:auth": "node scripts/seed-auth-users.js"
+    "seed:auth": "node scripts/seed-auth-users.js",
+    "seed:data": "node scripts/seed-full-data.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.49.1",
