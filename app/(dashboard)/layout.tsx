@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
 import { AuthStatus } from '@/app/components/auth-status';
 import { getSupabaseClient } from '@/lib/supabase/client';
 import { getVisibleDashboardModules } from '@/lib/domain/auth/permissions';
@@ -7,16 +8,20 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const supabase = getSupabaseClient();
   let role: 'owner' | 'dokter' | 'staff' | 'customer' = 'customer';
 
-  if (supabase) {
-    const { data: sessionData } = await supabase.auth.getSession();
-    const userId = sessionData.session?.user?.id;
+  if (!supabase) {
+    redirect('/login');
+  }
 
-    if (userId) {
-      const { data } = await supabase.from('profiles').select('role').eq('id', userId).maybeSingle();
-      if (data?.role) {
-        role = data.role as 'owner' | 'dokter' | 'staff' | 'customer';
-      }
-    }
+  const { data: sessionData } = await supabase.auth.getSession();
+  const userId = sessionData.session?.user?.id;
+
+  if (!userId) {
+    redirect('/login');
+  }
+
+  const { data } = await supabase.from('profiles').select('role').eq('id', userId).maybeSingle();
+  if (data?.role) {
+    role = data.role as 'owner' | 'dokter' | 'staff' | 'customer';
   }
 
   const modules = getVisibleDashboardModules(role);

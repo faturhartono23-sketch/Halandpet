@@ -16,6 +16,7 @@ env.local
 coverage/
 test-results/
 playwright-report/
+tests/e2e/storage/
 *.tsbuildinfo
 
 # editor/system files
