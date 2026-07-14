@@ -67,7 +67,7 @@ export default function PosPage() {
             <h2 className="font-medium text-slate-900">Keranjang</h2>
             <div className="mt-4 space-y-3">
               {lines.length === 0 ? (
-                <div className="rounded-lg border border-slate-200 bg-white p-3 text-sm text-slate-600">Belum ada item yang tersedia dari database.</div>
+                <div className="rounded-lg border border-slate-200 bg-white p-3 text-sm text-slate-600">Belum ada item aktif dari data produk atau layanan.</div>
               ) : (
                 lines.map((line) => (
                   <div key={line.id} className="rounded-lg border border-slate-200 bg-white p-3">
@@ -102,6 +102,10 @@ export default function PosPage() {
                 <span>Total</span>
                 <span>Rp {total.toLocaleString('id-ID')}</span>
               </div>
+            </div>
+            <div className="mt-4 rounded-lg border border-slate-200 bg-white p-3 text-sm text-slate-600">
+              <p className="font-medium text-slate-900">Status</p>
+              <p className="mt-1">Transaksi campuran produk dan layanan siap diproses dari satu layar.</p>
             </div>
           </div>
         </div>

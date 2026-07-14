@@ -8,17 +8,17 @@ export async function signInWithEmail(formData: FormData) {
   const password = String(formData.get('password') || '').trim();
 
   if (!email || !password) {
-    redirect('/login');
+    redirect('/login?error=missing-credentials');
   }
 
   const supabase = getSupabaseClient();
   if (!supabase) {
-    redirect('/login');
+    redirect('/login?error=missing-config');
   }
 
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
-  if (error) {
-    redirect('/login');
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  if (error || !data.session) {
+    redirect('/login?error=invalid-credentials');
   }
 
   redirect('/dashboard');

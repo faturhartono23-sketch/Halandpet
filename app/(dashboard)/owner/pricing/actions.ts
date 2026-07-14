@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { getSupabaseClient } from '@/lib/supabase/client';
 import { normalizePriceUpdateInput } from '@/lib/domain/pricing/price-update';
+import { ensureProfileForCurrentUser } from '@/lib/domain/auth/profile';
 
 export async function updatePrice(formData: FormData) {
   const supabase = getSupabaseClient();
@@ -11,12 +12,17 @@ export async function updatePrice(formData: FormData) {
     throw new Error('Supabase is not configured');
   }
 
+  const profile = await ensureProfileForCurrentUser(supabase as never);
+  if (!profile?.id || profile.role !== 'owner') {
+    throw new Error('Only owner can update prices');
+  }
+
   const payload = normalizePriceUpdateInput({
     itemType: String(formData.get('itemType') || 'product'),
     itemId: String(formData.get('itemId') || ''),
     oldPrice: String(formData.get('oldPrice') || '0'),
     newPrice: String(formData.get('newPrice') || '0'),
-    changedBy: String(formData.get('changedBy') || 'owner'),
+    changedBy: profile.id,
   });
 
   const { error: historyError } = await supabase.from('price_history').insert({

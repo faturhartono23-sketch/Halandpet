@@ -1,11 +1,14 @@
 "use client";
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { createProduct } from '../actions';
+import { getSupabaseClient } from '@/lib/supabase/client';
 
 export default function NewProductPage() {
+  const [categories, setCategories] = useState<Array<{ id: string; name: string }>>([]);
   const [form, setForm] = useState({
     name: '',
+    categoryId: '',
     sku: '',
     price: '0',
     costPrice: '0',
@@ -13,6 +16,17 @@ export default function NewProductPage() {
     unit: 'pcs',
     minStockAlert: '5',
   });
+
+  useEffect(() => {
+    const supabase = getSupabaseClient();
+    if (!supabase) {
+      return;
+    }
+
+    void supabase.from('product_categories').select('id, name').order('name').then(({ data }) => {
+      setCategories((data ?? []) as Array<{ id: string; name: string }>);
+    });
+  }, []);
 
   return (
     <main className="min-h-screen bg-slate-50 p-8">
@@ -32,6 +46,15 @@ export default function NewProductPage() {
             />
           </div>
           <div className="grid gap-4 md:grid-cols-2">
+            <div>
+              <label className="mb-2 block text-sm font-medium text-slate-700">Kategori</label>
+              <select name="categoryId" value={form.categoryId} onChange={(event) => setForm({ ...form, categoryId: event.target.value })} className="w-full rounded-lg border border-slate-300 px-3 py-2">
+                <option value="">Tanpa kategori</option>
+                {categories.map((category) => (
+                  <option key={category.id} value={category.id}>{category.name}</option>
+                ))}
+              </select>
+            </div>
             <div>
               <label className="mb-2 block text-sm font-medium text-slate-700">SKU</label>
               <input

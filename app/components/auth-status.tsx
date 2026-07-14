@@ -41,7 +41,11 @@ export function AuthStatus() {
       <span className="text-sm text-slate-600">{userEmail}</span>
       <button
         type="button"
-        onClick={() => getSupabaseClient()?.auth.signOut()}
+        onClick={async () => {
+          const supabase = getSupabaseClient();
+          await supabase?.auth.signOut();
+          window.location.href = '/login';
+        }}
         className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100"
       >
         Keluar

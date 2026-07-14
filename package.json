@@ -26,6 +26,7 @@
     "eslint-config-next": "14.2.15",
     "postcss": "^8.4.49",
     "tailwindcss": "^3.4.16",
+    "ts-interface-checker": "^0.1.13",
     "typescript": "^5.6.3",
     "vitest": "^2.1.8"
   }

@@ -9,3 +9,14 @@
 body {
   @apply bg-slate-50 text-slate-900 antialiased;
 }
+
+::selection {
+  @apply bg-teal-200 text-slate-900;
+}
+
+button,
+input,
+select,
+textarea {
+  @apply transition duration-150 ease-out;
+}

@@ -12,12 +12,17 @@ export async function createVisit(formData: FormData) {
   }
 
   const profile = await ensureProfileForCurrentUser(supabase as never);
-  if (!profile?.id) {
-    throw new Error('Unable to determine current user profile');
+  if (!profile?.id || (profile.role !== 'owner' && profile.role !== 'dokter')) {
+    throw new Error('Only owner or doctors can create visits');
+  }
+
+  const petId = String(formData.get('petId') || '').trim();
+  if (!petId) {
+    throw new Error('A visit must be linked to a pet');
   }
 
   const { error } = await supabase.from('visits').insert({
-    pet_id: String(formData.get('petId') || ''),
+    pet_id: petId,
     handled_by: profile.id,
     visit_type: String(formData.get('visitType') || 'checkup'),
     diagnosis: String(formData.get('diagnosis') || ''),

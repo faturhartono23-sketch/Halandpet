@@ -22,24 +22,26 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const modules = getVisibleDashboardModules(role);
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <header className="border-b border-slate-200 bg-white/80 backdrop-blur">
+    <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(45,212,191,0.14),_transparent_30%),linear-gradient(135deg,_#f8fafc_0%,_#f1f5f9_100%)]">
+      <header className="border-b border-slate-200/80 bg-white/80 backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-6 py-4">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.3em] text-teal-600">Halandpet</p>
-            <p className="text-sm text-slate-500">Dashboard</p>
+            <p className="text-sm font-semibold uppercase tracking-[0.35em] text-teal-600">Halandpet</p>
+            <p className="text-sm text-slate-500">Dashboard operasional klinik & petshop</p>
           </div>
-          <nav className="flex flex-wrap items-center gap-3 text-sm font-medium text-slate-700">
+          <nav className="flex flex-wrap items-center gap-2 text-sm font-medium text-slate-700">
             {modules.map((module) => (
-              <Link key={module.slug} href={module.href} className="rounded-lg px-3 py-2 hover:bg-slate-100 hover:text-slate-950">
+              <Link key={module.slug} href={module.href} className="rounded-full border border-transparent px-3 py-2 transition hover:border-slate-200 hover:bg-white hover:text-slate-950">
                 {module.label}
               </Link>
             ))}
-            <AuthStatus />
+            <div className="ml-2 rounded-full border border-slate-200 bg-white px-3 py-2">
+              <AuthStatus />
+            </div>
           </nav>
         </div>
       </header>
-      <div>{children}</div>
+      <div className="px-4 py-6 sm:px-6 lg:px-8">{children}</div>
     </div>
   );
 }

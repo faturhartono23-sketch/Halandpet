@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { applyStockDelta, calculateTransactionTotals, createTransactionSnapshot } from './transaction';
+import { applyStockDelta, buildVoidTransactionPayload, calculateTransactionTotals, canVoidTransaction, createTransactionSnapshot } from './transaction';
 
 describe('transaction domain logic', () => {
   it('calculates subtotal, discount, and total correctly', () => {
@@ -27,5 +27,21 @@ describe('transaction domain logic', () => {
   it('adjusts stock in the expected direction', () => {
     expect(applyStockDelta(10, 2, 'decrease')).toBe(8);
     expect(applyStockDelta(8, 3, 'increase')).toBe(11);
+  });
+
+  it('allows only owner to void an active transaction', () => {
+    expect(canVoidTransaction('owner', 'completed')).toBe(true);
+    expect(canVoidTransaction('staff', 'completed')).toBe(false);
+    expect(canVoidTransaction('owner', 'void')).toBe(false);
+  });
+
+  it('builds a void payload with reason and actor metadata', () => {
+    const payload = buildVoidTransactionPayload('Kesalahan input', 'profile-1');
+
+    expect(payload).toEqual({
+      status: 'void',
+      voided_by: 'profile-1',
+      voided_reason: 'Kesalahan input',
+    });
   });
 });

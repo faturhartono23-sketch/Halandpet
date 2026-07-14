@@ -20,4 +20,29 @@ describe('checkout helpers', () => {
     expect(payload.items[0].price_at_transaction).toBe(45000);
     expect(payload.items[0].line_total).toBe(90000);
   });
+
+  it('propagates customer and pet linkage into the payload', () => {
+    const payload = buildTransactionPayload({
+      items: [
+        { itemType: 'service', itemId: 's1', itemName: 'Konsultasi', priceAtTransaction: 150000, qty: 1, petId: 'pet-1' },
+      ],
+      customerId: 'customer-1',
+      paymentMethod: 'cash',
+      customerName: 'Budi',
+    });
+
+    expect(payload.customer_id).toBe('customer-1');
+    expect(payload.items[0].pet_id).toBe('pet-1');
+  });
+
+  it('requires a pet linkage for service items', () => {
+    expect(() => buildTransactionPayload({
+      items: [
+        { itemType: 'service', itemId: 's1', itemName: 'Konsultasi', priceAtTransaction: 150000, qty: 1 },
+      ],
+      customerId: 'customer-1',
+      paymentMethod: 'cash',
+      customerName: 'Budi',
+    })).toThrow('Service items require a pet linkage');
+  });
 });

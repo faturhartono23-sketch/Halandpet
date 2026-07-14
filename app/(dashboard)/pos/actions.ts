@@ -13,11 +13,11 @@ export async function createTransaction(formData: FormData) {
   }
 
   const profile = await ensureProfileForCurrentUser(supabase as never);
-  if (!profile?.id) {
-    throw new Error('Unable to determine current user profile');
+  if (!profile?.id || (profile.role !== 'owner' && profile.role !== 'staff')) {
+    throw new Error('Only owner or staff can create transactions');
   }
 
-  const items: Array<{ itemType: 'product' | 'service'; itemId: string; itemName: string; priceAtTransaction: number; qty: number }> = [];
+  const items: Array<{ itemType: 'product' | 'service'; itemId: string; itemName: string; priceAtTransaction: number; qty: number; petId?: string }> = [];
   formData.forEach((value, key) => {
     if (key.startsWith('itemId-')) {
       const index = key.split('-')[1];
@@ -26,7 +26,8 @@ export async function createTransaction(formData: FormData) {
       const itemName = String(formData.get(`itemName-${index}`) || 'Produk');
       const priceAtTransaction = Number(formData.get(`price-${index}`) || 0);
       const qty = Number(formData.get(`qty-${index}`) || 1);
-      items.push({ itemType, itemId, itemName, priceAtTransaction, qty });
+      const petId = String(formData.get(`petId-${index}`) || '').trim() || undefined;
+      items.push({ itemType, itemId, itemName, priceAtTransaction, qty, petId });
     }
   });
 
@@ -40,6 +41,7 @@ export async function createTransaction(formData: FormData) {
         qty: Number(formData.get('qty') || 1),
       },
     ],
+    customerId: String(formData.get('customerId') || '').trim() || null,
     customerName: String(formData.get('customerName') || ''),
     paymentMethod: String(formData.get('paymentMethod') || 'cash') as 'cash' | 'transfer' | 'other',
   };
@@ -47,6 +49,7 @@ export async function createTransaction(formData: FormData) {
   const payload = buildTransactionPayload(draft);
   const { data: transaction, error: transactionError } = await supabase.from('transactions').insert({
     transaction_number: payload.transaction_number,
+    customer_id: payload.customer_id,
     subtotal: payload.subtotal,
     discount: payload.discount,
     total: payload.total,

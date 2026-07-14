@@ -4,13 +4,23 @@ import { getSupabaseClient } from '@/lib/supabase/client';
 export default async function VisitsPage() {
   const supabase = getSupabaseClient();
   let visits: Array<{ id: string; pet_id: string; visit_type: string | null; diagnosis: string | null; treatment_notes: string | null; status: string; created_at: string }> = [];
+  let pets: Array<{ id: string; name: string; customer_id: string }> = [];
 
   if (supabase) {
-    const { data, error } = await supabase.from('visits').select('id, pet_id, visit_type, diagnosis, treatment_notes, status, created_at').order('created_at', { ascending: false });
-    if (!error) {
-      visits = data ?? [];
+    const [{ data: visitData, error: visitError }, { data: petData, error: petError }] = await Promise.all([
+      supabase.from('visits').select('id, pet_id, visit_type, diagnosis, treatment_notes, status, created_at').order('created_at', { ascending: false }),
+      supabase.from('pets').select('id, name, customer_id').order('created_at', { ascending: false }),
+    ]);
+
+    if (!visitError) {
+      visits = visitData ?? [];
+    }
+    if (!petError) {
+      pets = petData ?? [];
     }
   }
+
+  const petLookup = new Map(pets.map((pet) => [pet.id, pet.name]));
 
   return (
     <main className="min-h-screen bg-slate-50 p-8">
@@ -23,8 +33,13 @@ export default async function VisitsPage() {
 
         <form action={createVisit} className="mt-8 grid gap-4 rounded-2xl border border-slate-200 bg-slate-50 p-5 lg:grid-cols-2">
           <div>
-            <label className="mb-2 block text-sm font-medium text-slate-700">Pet ID</label>
-            <input name="petId" className="w-full rounded-lg border border-slate-300 px-3 py-2" required />
+            <label className="mb-2 block text-sm font-medium text-slate-700">Pet</label>
+            <select name="petId" className="w-full rounded-lg border border-slate-300 px-3 py-2" required>
+              <option value="">Pilih hewan</option>
+              {pets.map((pet) => (
+                <option key={pet.id} value={pet.id}>{pet.name}</option>
+              ))}
+            </select>
           </div>
           <div>
             <label className="mb-2 block text-sm font-medium text-slate-700">Jenis Visit</label>
@@ -72,7 +87,7 @@ export default async function VisitsPage() {
                 <div key={visit.id} className="px-5 py-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="font-medium text-slate-900">Pet ID: {visit.pet_id}</p>
+                      <p className="font-medium text-slate-900">{petLookup.get(visit.pet_id) ?? 'Hewan tidak ditemukan'}</p>
                       <p className="text-sm text-slate-600">{visit.visit_type ?? '-'} • {visit.diagnosis ?? '-'}</p>
                     </div>
                     <span className={`rounded-full px-3 py-1 text-sm font-medium ${visit.status === 'completed' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
@@ -80,6 +95,7 @@ export default async function VisitsPage() {
                     </span>
                   </div>
                   <p className="mt-2 text-sm text-slate-600">{visit.treatment_notes ?? '-'}</p>
+                  <p className="mt-2 text-xs uppercase tracking-[0.25em] text-slate-400">{new Date(visit.created_at).toLocaleString('id-ID')}</p>
                 </div>
               ))
             )}

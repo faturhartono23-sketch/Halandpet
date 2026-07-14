@@ -4,6 +4,7 @@ const highlights = [
   'POS terpadu untuk produk dan layanan klinik',
   'Riwayat perawatan hewan yang tersusun kronologis',
   'Kontrol harga owner-only dengan audit trail',
+  'Laporan penjualan dan status stok yang terintegrasi',
 ];
 
 export default function HomePage() {
@@ -38,6 +39,10 @@ export default function HomePage() {
               </li>
             ))}
           </ul>
+          <div className="mt-6 rounded-2xl border border-teal-400/30 bg-slate-900/40 p-4 text-sm text-slate-300">
+            <p className="font-medium text-white">Siap digunakan untuk bisnis klinik hewan & petshop modern.</p>
+            <p className="mt-2">Semua modul utama sudah dihubungkan ke data nyata dan role-based logic.</p>
+          </div>
         </div>
       </div>
     </main>

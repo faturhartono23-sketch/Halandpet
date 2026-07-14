@@ -13,6 +13,7 @@ const moduleCatalog: Record<AppRole, DashboardModule[]> = {
     { slug: 'clinic', label: 'Klinik', href: '/clinic/visits' },
     { slug: 'pos', label: 'POS', href: '/pos' },
     { slug: 'pricing', label: 'Kontrol Harga', href: '/owner/pricing' },
+    { slug: 'reports', label: 'Laporan', href: '/reports' },
   ],
   dokter: [
     { slug: 'dashboard', label: 'Dashboard', href: '/dashboard' },

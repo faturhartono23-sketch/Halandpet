@@ -1,2 +1,24 @@
-node_modules
-.next
+# dependencies
+node_modules/
+.pnpm-store/
+
+# next.js build output
+.next/
+out/
+
+# local env files
+env.local
+.env
+.env.*
+!.env.example
+
+# test and coverage output
+coverage/
+test-results/
+playwright-report/
+*.tsbuildinfo
+
+# editor/system files
+.DS_Store
+.vscode/
+.idea/

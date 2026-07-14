@@ -85,7 +85,7 @@ export default async function PricingPage() {
               <tbody className="divide-y divide-slate-200">
                 {priceHistory.length === 0 ? (
                   <tr>
-                    <td colSpan={4} className="px-4 py-6 text-center text-slate-500">Belum ada riwayat perubahan harga.</td>
+                    <td colSpan={4} className="px-4 py-6 text-center text-slate-500">Belum ada riwayat perubahan harga. Perubahan harga pertama akan muncul di sini.</td>
                   </tr>
                 ) : (
                   priceHistory.map((entry) => (

@@ -17,11 +17,18 @@ type CheckoutItem = {
   petId?: string;
 };
 
+type CustomerOption = { id: string; full_name: string; phone?: string | null };
+type PetOption = { id: string; name: string; customer_id: string; species?: string | null };
+
 export default function CheckoutPage() {
   const [customerName, setCustomerName] = useState('');
+  const [customerId, setCustomerId] = useState<string | null>(null);
+  const [selectedPetId, setSelectedPetId] = useState<string | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<'cash' | 'transfer' | 'other'>('cash');
   const [products, setProducts] = useState<ProductOption[]>([]);
   const [services, setServices] = useState<ServiceOption[]>([]);
+  const [customers, setCustomers] = useState<CustomerOption[]>([]);
+  const [pets, setPets] = useState<PetOption[]>([]);
   const [items, setItems] = useState<CheckoutItem[]>([]);
 
   useEffect(() => {
@@ -31,13 +38,17 @@ export default function CheckoutPage() {
     }
 
     const loadOptions = async () => {
-      const [{ data: productData }, { data: serviceData }] = await Promise.all([
+      const [{ data: productData }, { data: serviceData }, { data: customerData }, { data: petData }] = await Promise.all([
         supabase.from('products').select('id, name, price, stock_qty').eq('is_active', true),
         supabase.from('services').select('id, name, price').eq('is_active', true),
+        supabase.from('customers').select('id, full_name, phone').order('created_at', { ascending: false }),
+        supabase.from('pets').select('id, name, customer_id, species').order('created_at', { ascending: false }),
       ]);
 
       setProducts((productData ?? []) as ProductOption[]);
       setServices((serviceData ?? []) as ServiceOption[]);
+      setCustomers((customerData ?? []) as CustomerOption[]);
+      setPets((petData ?? []) as PetOption[]);
 
       if (!items.length) {
         const initialItems = [
@@ -56,7 +67,7 @@ export default function CheckoutPage() {
     void loadOptions();
   }, []);
 
-  const payload = useMemo(() => buildTransactionPayload({ items, customerName, paymentMethod }), [customerName, items, paymentMethod]);
+  const payload = useMemo(() => buildTransactionPayload({ items: items.map((item) => ({ ...item, petId: item.itemType === 'service' ? selectedPetId ?? item.petId : item.petId })), customerId, customerName, paymentMethod }), [customerId, customerName, items, paymentMethod, selectedPetId]);
 
   const addProduct = (product: ProductOption) => {
     setItems((current) => [
@@ -80,6 +91,7 @@ export default function CheckoutPage() {
         itemName: service.name,
         priceAtTransaction: Number(service.price),
         qty: 1,
+        petId: selectedPetId ?? undefined,
       },
     ]);
   };
@@ -135,6 +147,7 @@ export default function CheckoutPage() {
                     <input type="hidden" name={`itemType-${index}`} value={item.itemType} />
                     <input type="hidden" name={`price-${index}`} value={item.priceAtTransaction} />
                     <input type="hidden" name={`qty-${index}`} value={item.qty} />
+                    <input type="hidden" name={`petId-${index}`} value={item.petId ?? ''} />
                     <input type="number" min="1" value={item.qty} onChange={(event) => updateItemQty(index, Number(event.target.value))} className="w-16 rounded-lg border border-slate-300 px-2 py-1" />
                   </div>
                   <div className="mt-2 text-xs uppercase tracking-[0.2em] text-slate-400">
@@ -143,12 +156,40 @@ export default function CheckoutPage() {
                 </div>
               ))}
               <div>
+                <label className="mb-2 block font-medium text-slate-700">Customer</label>
+                <select value={customerId ?? ''} onChange={(event) => {
+                  const nextCustomerId = event.target.value || null;
+                  setCustomerId(nextCustomerId);
+                  if (!nextCustomerId) {
+                    setSelectedPetId(null);
+                  } else {
+                    const firstPet = pets.find((pet) => pet.customer_id === nextCustomerId);
+                    setSelectedPetId(firstPet?.id ?? null);
+                  }
+                }} className="w-full rounded-lg border border-slate-300 px-3 py-2">
+                  <option value="">Walk-in / anonim</option>
+                  {customers.map((customer) => (
+                    <option key={customer.id} value={customer.id}>{customer.full_name}</option>
+                  ))}
+                </select>
+                <input type="hidden" name="customerId" value={customerId ?? ''} />
+              </div>
+              <div>
                 <label className="mb-2 block font-medium text-slate-700">Nama Customer</label>
                 <input name="customerName" value={customerName} onChange={(event) => setCustomerName(event.target.value)} className="w-full rounded-lg border border-slate-300 px-3 py-2" />
               </div>
               <div>
+                <label className="mb-2 block font-medium text-slate-700">Hewan untuk layanan</label>
+                <select value={selectedPetId ?? ''} onChange={(event) => setSelectedPetId(event.target.value || null)} className="w-full rounded-lg border border-slate-300 px-3 py-2">
+                  <option value="">Pilih hewan (opsional)</option>
+                  {pets.filter((pet) => !customerId || pet.customer_id === customerId).map((pet) => (
+                    <option key={pet.id} value={pet.id}>{pet.name} {pet.species ? `(${pet.species})` : ''}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
                 <label className="mb-2 block font-medium text-slate-700">Metode Pembayaran</label>
-                <select value={paymentMethod} onChange={(event) => setPaymentMethod(event.target.value as 'cash' | 'transfer' | 'other')} className="w-full rounded-lg border border-slate-300 px-3 py-2">
+                <select name="paymentMethod" value={paymentMethod} onChange={(event) => setPaymentMethod(event.target.value as 'cash' | 'transfer' | 'other')} className="w-full rounded-lg border border-slate-300 px-3 py-2">
                   <option value="cash">Cash</option>
                   <option value="transfer">Transfer</option>
                   <option value="other">Other</option>

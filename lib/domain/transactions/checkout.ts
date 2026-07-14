@@ -7,6 +7,7 @@ export type CheckoutDraft = {
     qty: number;
     petId?: string;
   }>;
+  customerId?: string | null;
   customerName?: string;
   paymentMethod: 'cash' | 'transfer' | 'other';
   paymentStatus?: 'paid' | 'unpaid' | 'partial';
@@ -20,6 +21,11 @@ export function buildTransactionNumber(prefix = 'INV') {
 }
 
 export function buildTransactionPayload(draft: CheckoutDraft) {
+  const hasServiceWithoutPet = draft.items.some((item) => item.itemType === 'service' && !item.petId);
+  if (hasServiceWithoutPet) {
+    throw new Error('Service items require a pet linkage');
+  }
+
   const subtotal = draft.items.reduce((sum, item) => sum + item.priceAtTransaction * item.qty, 0);
   return {
     transaction_number: buildTransactionNumber(),
@@ -29,6 +35,7 @@ export function buildTransactionPayload(draft: CheckoutDraft) {
     payment_method: draft.paymentMethod,
     payment_status: draft.paymentStatus ?? 'paid',
     status: 'completed',
+    customer_id: draft.customerId ?? null,
     customer_name_snapshot: draft.customerName?.trim() || null,
     items: draft.items.map((item) => ({
       item_type: item.itemType,

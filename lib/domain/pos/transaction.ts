@@ -26,3 +26,15 @@ export function applyStockDelta(stockQty: number, qty: number, direction: 'incre
   const delta = direction === 'decrease' ? -qty : qty;
   return stockQty + delta;
 }
+
+export function canVoidTransaction(role: string, status: string) {
+  return role === 'owner' && status === 'completed';
+}
+
+export function buildVoidTransactionPayload(reason: string, voidedBy: string) {
+  return {
+    status: 'void' as const,
+    voided_by: voidedBy,
+    voided_reason: reason.trim(),
+  };
+}
